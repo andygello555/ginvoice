@@ -20,6 +20,7 @@ type CliError struct {
 var (
 	// ParseErrUser occurs when a parse error is down to malformed user input.
 	ParseErrUser = CliError{1, false, "The following value cannot be parsed"}
+	RequiredFlag = CliError{2, false, "The following flags are required"}
 )
 
 // Handle the print of the error details as well as exiting with the defined exit code.

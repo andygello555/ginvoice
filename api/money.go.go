@@ -3,6 +3,10 @@ package api
 import (
 	"errors"
 	"fmt"
+	str "github.com/andygello555/gotils/strings"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 type Currency struct {
@@ -23,11 +27,21 @@ var (
 		&UnitedStatesDollar: {},
 		&ZeroCurrency:       {},
 	}
+	CheckIfMoney = regexp.MustCompile("([A-Z]{3} ?|^\\W)\\d+\\.?\\d*")
 )
 
 func CurrencyFromSymbol(symbol string) *Currency {
 	for currency := range Currencies {
 		if currency.Symbol == symbol {
+			return currency
+		}
+	}
+	return nil
+}
+
+func CurrencyFromAbbr(abbr string) *Currency {
+	for currency := range Currencies {
+		if currency.Abbr == abbr {
 			return currency
 		}
 	}
@@ -55,6 +69,48 @@ func ToMoney(f float64, currency Currency) *Money {
 		Money:    m,
 		Currency: currency,
 	}
+}
+
+// ParseMoney parses a string to Money.
+//
+// The string can either be in the format:
+//  // Using the abbreviation
+//  GBP 10.00
+// Or:
+//  // Using the symbol
+//  £10.00
+func ParseMoney(s string) (*Money, error) {
+	if CheckIfMoney.MatchString(s) {
+		symbolOrAbbr := ""
+		money := ""
+		for _, char := range s {
+			charStr := string(char)
+			switch {
+			case charStr == " ":
+				continue
+			case strings.Contains(str.Numeric + ".", charStr):
+				money += charStr
+			case strings.Contains(str.Alpha, charStr): fallthrough
+			default:
+				symbolOrAbbr += charStr
+			}
+		}
+		// We see if the given symbolOrAbbr is a valid currency
+		var currency *Currency
+		symbolOrAbbr = strings.ToUpper(symbolOrAbbr)
+		if currency = CurrencyFromSymbol(symbolOrAbbr); currency == nil {
+			if currency = CurrencyFromAbbr(symbolOrAbbr); currency == nil {
+				return nil, errors.New(fmt.Sprintf("no currency with symbol/abbreviation: %s", symbolOrAbbr))
+			}
+		}
+		// Then we'll try and parse the money as a float
+		f, err := strconv.ParseFloat(money, 64)
+		if err != nil {
+			return nil, err
+		}
+		return ToMoney(f, *currency), nil
+	}
+	return nil, errors.New(fmt.Sprintf("\"%s\" does not contain a regex match", s))
 }
 
 // Float64 converts Money to float64

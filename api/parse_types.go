@@ -1,3 +1,4 @@
+// Package api contains all the background functions, types and constants to parse command line arguments and create invoices.
 package api
 
 import (
@@ -61,16 +62,11 @@ func keyValLogic(keyVal string, t KeyValueFlags, secondLevelSplit *regexp.Regexp
 				}
 				*prop.(*uint) = uint(i)
 			case *Money:
-				symbol, f := string(val[0]), val[1:]
-				i, err := strconv.ParseFloat(f, 64)
+				m, err := ParseMoney(val)
 				if err != nil {
 					return nil, err
 				}
-				currency := CurrencyFromSymbol(symbol)
-				if currency == nil {
-					return nil, errors.New(fmt.Sprintf("cannot get Currency from Symbol: %s", symbol))
-				}
-				*prop.(*Money) = *ToMoney(i, *currency)
+				*prop.(*Money) = *m
 			default:
 				return nil, errors.New(fmt.Sprintf("cannot set field of type \"%s\" to \"%v\"", str.TypeName(prop), val))
 			}
@@ -194,41 +190,42 @@ func (is *Items) Set(value string) error {
 	for _, itemStr := range globals.FirstLevelSplit.Split(value, -1) {
 		item := Item{}
 		err = setLogic(itemStr, &item, globals.SecondLevelSplit)
-		if err != nil && item.HoursQuantity == 0 {
-			// Here we count how many empty fields we have using reflection. This is so we can default the HoursQuantity
-			// value to 1 if no HoursQuantity value is given.
-			valueOf := reflect.ValueOf(item)
-			emptyMoney := Money{}
-			clear := true
-			for i := 0; i < reflect.TypeOf(item).NumField(); i++ {
-				val := reflect.Indirect(valueOf).Field(i)
-				switch reflect.TypeOf(item).Field(i).Name {
-				case "HoursQuantity":
-					if val.Interface().(uint) == 0 {
-						item.HoursQuantity = 1
-					}
-				case "Tax":
-					if val.Interface().(Money) == emptyMoney {
-						item.Tax = Money{
-							Money:    0,
-							Currency: ZeroCurrency,
-						}
-					}
-				case "Description":
-					if len(val.String()) == 0 {
-						clear = false
-					}
-				case "Rate":
-					if val.Interface().(Money) == emptyMoney {
-						clear = false
+		// Here we count how many empty fields we have using reflection. This is so we can default the HoursQuantity
+		// value to 1 if no HoursQuantity value is given.
+		valueOf := reflect.ValueOf(item)
+		emptyMoney := Money{}
+		clear := true
+		for i := 0; i < reflect.TypeOf(item).NumField(); i++ {
+			val := reflect.Indirect(valueOf).Field(i)
+			switch reflect.TypeOf(item).Field(i).Name {
+			case "HoursQuantity":
+				if val.Interface().(uint) == 0 {
+					item.HoursQuantity = 1
+				}
+			case "Tax":
+				if val.Interface().(Money) == emptyMoney {
+					item.Tax = Money{
+						Money:    0,
+						Currency: ZeroCurrency,
 					}
 				}
+			case "Description":
+				if len(val.String()) == 0 {
+					clear = false
+				}
+			case "Rate":
+				if val.Interface().(Money) == emptyMoney {
+					clear = false
+				}
 			}
+		}
 
-			// Here clear is true then we can clear out the error
-			if clear {
-				err = nil
-			}
+		// Here clear is true then we can clear out the error
+		if clear {
+			err = nil
+		}
+		if err != nil {
+			return err
 		}
 		items = append(items, &item)
 	}
@@ -247,12 +244,12 @@ type Contact struct {
 
 func (c *Contact) String() string {
 	return fmt.Sprintf(`%s
-	%s %s
-	%s
+%s %s
+%s
 
-	%s
-	%s
-	`, c.Company, c.FirstName, c.LastName, strings.Join(c.Address, "\n"), c.Email, c.Address)
+%s
+%s
+`, c.Company, c.FirstName, c.LastName, strings.Join(c.Address, "\n"), c.Email, c.PhoneNo)
 }
 
 func (c *Contact) KeyVal(keyVal string) (interface{}, error) {
@@ -338,10 +335,10 @@ type Bank struct {
 
 func (b *Bank) String() string {
 	return fmt.Sprintf(`Bank details:
-	%s
-	A/c No.    %s
-	Sort code: %s
-	`, b.Bank, b.AccountNo, b.SortCode)
+%s
+A/c No.    %s
+Sort code: %s
+`, b.Bank, b.AccountNo, b.SortCode)
 }
 
 func (b *Bank) KeyVal(keyVal string) (interface{}, error) {
