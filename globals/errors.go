@@ -19,8 +19,11 @@ type CliError struct {
 // CliError(s) (positive codes).
 var (
 	// ParseErrUser occurs when a parse error is down to malformed user input.
-	ParseErrUser = CliError{1, false, "The following value cannot be parsed"}
-	RequiredFlag = CliError{2, false, "The following flags are required"}
+	ParseErrUser         = CliError{1, false, "The following value cannot be parsed"}
+	RequiredFlag         = CliError{2, false, "The following flags are required"}
+	FileErrUser          = CliError{3, false, "A user file error occurred"}
+	FileErr              = CliError{4, true, "A file error occurred"}
+	InvoiceGenerationErr = CliError{5, true, "Error when generating invoice"}
 )
 
 // Handle the print of the error details as well as exiting with the defined exit code.

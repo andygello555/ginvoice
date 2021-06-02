@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 type Currency struct {
@@ -19,7 +20,7 @@ var (
 	GreatBritishPound = Currency{"GBP", "£"}
 	// UnitedStatesDollar (const)
 	UnitedStatesDollar = Currency{"USD", "$"}
-	// ZeroCurrency (const): An empty Currency to use as a default
+	// ZeroCurrency (const): An empty Currency To use as a default
 	ZeroCurrency       = Currency{}
 	// Currencies (const)
 	Currencies = map[*Currency]struct{}{
@@ -53,8 +54,8 @@ type Money struct {
 	Currency Currency
 }
 
-// ToMoney converts a float64 to Money
-// e.g. 1.23 to 1.23, 1.345 to 1.35 depending on what Currency is given.
+// ToMoney converts a float64 To Money
+// e.g. 1.23 To 1.23, 1.345 To 1.35 depending on what Currency is given.
 func ToMoney(f float64, currency Currency) *Money {
 	var m uint64
 	switch currency {
@@ -71,7 +72,7 @@ func ToMoney(f float64, currency Currency) *Money {
 	}
 }
 
-// ParseMoney parses a string to Money.
+// ParseMoney parses a string To Money.
 //
 // The string can either be in the format:
 //  // Using the abbreviation
@@ -113,7 +114,7 @@ func ParseMoney(s string) (*Money, error) {
 	return nil, errors.New(fmt.Sprintf("\"%s\" does not contain a regex match", s))
 }
 
-// Float64 converts Money to float64
+// Float64 converts Money To float64
 func (m *Money) Float64() float64 {
 	x := float64(m.Money)
 	switch m.Currency {
@@ -128,7 +129,7 @@ func (m *Money) Float64() float64 {
 }
 
 // Multiply safely multiplies a Money value by a float64, rounding
-// to the nearest cent.
+// To the nearest cent.
 func (m *Money) Multiply(f float64) *Money {
 	var x float64
 	switch m.Currency {
@@ -143,17 +144,39 @@ func (m *Money) Multiply(f float64) *Money {
 	}
 }
 
-// Add the given float64 to the Money value.
+// Add the given float64 To the Money value.
 func (m *Money) Add(f float64) *Money {
 	return ToMoney(m.Float64() + f, m.Currency)
 }
 
-// String returns a formatted USD value
+// String returns a formatted Money value with the currency's symbol and its abbreviation.
 func (m *Money) String() string {
 	if m.Currency != ZeroCurrency {
 		x := float64(m.Money)
 		x = x / 100
-		return fmt.Sprintf("%s%.2f", m.Currency.Symbol, x)
+		return fmt.Sprintf("%s %s%.2f", m.Currency.Abbr, m.Currency.Symbol, x)
 	}
 	return ""
+}
+
+// StringSymbol returns a formatted Money value with the currency's symbol.
+func (m *Money) StringSymbol() string {
+	s := m.String()
+	if len(s) != 0 {
+		s = strings.Split(s, " ")[1]
+	}
+	return s
+}
+
+// StringAbbr returns a formatted Money value with the currency's abbreviated type.
+func (m *Money) StringAbbr() string {
+	s := m.String()
+	if len(s) != 0 {
+		sp := strings.Split(s, " ")
+		abbr := sp[0]
+		_, symI := utf8.DecodeRuneInString(sp[1])
+		money := sp[1][symI:]
+		s = fmt.Sprintf("%s %s", abbr, money)
+	}
+	return s
 }

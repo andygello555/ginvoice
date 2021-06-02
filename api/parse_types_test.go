@@ -52,7 +52,7 @@ func TestContact(t *testing.T) {
 		},
 		{
 			input: "lastName: Smith, email: johnsmith@example.com, phoneNo: 123123123, address: 1 Smith Street;Smith Town;Smith;SM20 123;UK",
-			err:   errors.New("Contact details: you need to give 6 key-value pairs each of which representing one of the following fields:\n\t- Company\n\t- FirstName\n\t- LastName\n\t- Email\n\t- PhoneNo\n\t- Address\n"),
+			err:   errors.New("Contact details: you need To give 6 key-value pairs each of which representing one of the following fields:\n\t- Company\n\t- FirstName\n\t- LastName\n\t- Email\n\t- PhoneNo\n\t- Address\n"),
 			out:   Contact{},
 		},
 		{
@@ -93,7 +93,7 @@ func TestContact(t *testing.T) {
 		} else if err == nil && test.err != nil {
 			t.Errorf("parsing contact \"%s\" does not return the expected error: \"%s\"", test.input, test.err.Error())
 		} else if err != nil && test.err == nil {
-			t.Errorf("parsing contact \"%s\" is not supposed to return error: \"%s\"", test.input, err.Error())
+			t.Errorf("parsing contact \"%s\" is not supposed To return error: \"%s\"", test.input, err.Error())
 		} else {
 			if !reflect.DeepEqual(contact, test.out) {
 				t.Errorf("expected output (%v) does not match actual output: %v", test.out, contact)
@@ -126,17 +126,17 @@ func TestBank(t *testing.T) {
 		},
 		{
 			input: "b:Bank O' Clock,a/c:1231231,s:696969",
-			err:   errors.New("\"1231231\" is not a valid sort code (8 digits)"),
+			err:   errors.New("\"1231231\" is not a valid account number (8 digits)"),
 			out:   Bank{},
 		},
 		{
 			input: "b:Bank O' Clock,a/c:abcabcab,s:696969",
-			err:   errors.New("\"abcabcab\" is not a valid sort code (not numeric)"),
+			err:   errors.New("\"abcabcab\" is not a valid account number (not numeric)"),
 			out:   Bank{},
 		},
 		{
 			input: "b:Bank O' Clock,a/c:abcabc1,s:696969",
-			err:   errors.New("\"abcabc1\" is not a valid sort code (8 digits) (not numeric)"),
+			err:   errors.New("\"abcabc1\" is not a valid account number (8 digits) (not numeric)"),
 			out:   Bank{},
 		},
 		{
@@ -159,12 +159,12 @@ func TestBank(t *testing.T) {
 		err := bank.Set(test.input)
 		if err != nil && test.err != nil {
 			if !strings.Contains(err.Error(), test.err.Error()) {
-				t.Errorf("parsing bank \"%s\" returns the incorrect error:\nexpected: \"%s\"\ngot: \"%s\"", test.input, test.err.Error(), err.Error())
+				t.Errorf("parsing Bank \"%s\" returns the incorrect error:\nexpected: \"%s\"\ngot: \"%s\"", test.input, test.err.Error(), err.Error())
 			}
 		} else if err == nil && test.err != nil {
-			t.Errorf("parsing bank \"%s\" does not return the expected error: \"%s\"", test.input, test.err.Error())
+			t.Errorf("parsing Bank \"%s\" does not return the expected error: \"%s\"", test.input, test.err.Error())
 		} else if err != nil && test.err == nil {
-			t.Errorf("parsing bank \"%s\" is not supposed to return error: \"%s\"", test.input, err.Error())
+			t.Errorf("parsing Bank \"%s\" is not supposed To return error: \"%s\"", test.input, err.Error())
 		} else {
 			if !reflect.DeepEqual(bank, test.out) {
 				t.Errorf("expected output (%v) does not match actual output: %v", test.out, bank)
@@ -296,7 +296,7 @@ func TestItems(t *testing.T) {
 		},
 		{
 			input:     "r:$10",
-			err: 	   errors.New(`Item details: you need to give 4 key-value pairs each of which representing one of the following fields:
+			err: 	   errors.New(`Item details: you need To give 4 key-value pairs each of which representing one of the following fields:
 	- Description
 	- HoursQuantity
 	- Rate
@@ -310,12 +310,12 @@ func TestItems(t *testing.T) {
 		err := items.Set(test.input)
 		if err != nil && test.err != nil {
 			if !strings.Contains(err.Error(), test.err.Error()) {
-				t.Errorf("parsing items \"%s\" returns the incorrect error:\nexpected: \"%s\"\ngot: \"%s\"", test.input, test.err.Error(), err.Error())
+				t.Errorf("parsing Items \"%s\" returns the incorrect error:\nexpected: \"%s\"\ngot: \"%s\"", test.input, test.err.Error(), err.Error())
 			}
 		} else if err == nil && test.err != nil {
-			t.Errorf("parsing items \"%s\" does not return the expected error: \"%s\"", test.input, test.err.Error())
+			t.Errorf("parsing Items \"%s\" does not return the expected error: \"%s\"", test.input, test.err.Error())
 		} else if err != nil && test.err == nil {
-			t.Errorf("parsing items \"%s\" is not supposed to return error: \"%s\"", test.input, err.Error())
+			t.Errorf("parsing Items \"%s\" is not supposed To return error: \"%s\"", test.input, err.Error())
 		} else {
 			if !reflect.DeepEqual(items, test.out) {
 				t.Errorf("expected output (%v) does not match actual output: %v", test.out, items)
@@ -328,9 +328,9 @@ func TestItems(t *testing.T) {
 				}
 			}
 
-			// Check items total
+			// Check Items total
 			if *items.Total() != test.total {
-				t.Errorf("items do not have the expected total of %v, instead it is: %v", &test.total, items.Total())
+				t.Errorf("Items do not have the expected total of %v, instead it is: %v", &test.total, items.Total())
 			}
 		}
 	}
@@ -363,7 +363,7 @@ func TestDate(t *testing.T) {
 		} else if err == nil && test.err != nil {
 			t.Errorf("parsing date \"%s\" does not return the expected error: \"%s\"", test.input, test.err.Error())
 		} else if err != nil && test.err == nil {
-			t.Errorf("parsing date \"%s\" is not supposed to return error: \"%s\"", test.input, err.Error())
+			t.Errorf("parsing date \"%s\" is not supposed To return error: \"%s\"", test.input, err.Error())
 		} else {
 			// Check equality
 			if date != test.out {

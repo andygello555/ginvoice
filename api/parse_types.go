@@ -1,4 +1,4 @@
-// Package api contains all the background functions, types and constants to parse command line arguments and create invoices.
+// Package api contains all the background functions, types and constants To parse command line arguments and create invoices.
 package api
 
 import (
@@ -68,7 +68,7 @@ func keyValLogic(keyVal string, t KeyValueFlags, secondLevelSplit *regexp.Regexp
 				}
 				*prop.(*Money) = *m
 			default:
-				return nil, errors.New(fmt.Sprintf("cannot set field of type \"%s\" to \"%v\"", str.TypeName(prop), val))
+				return nil, errors.New(fmt.Sprintf("cannot set field of type \"%s\" To \"%v\"", str.TypeName(prop), val))
 			}
 			break
 		}
@@ -100,7 +100,7 @@ func setLogic(value string, t KeyValueFlags, firstLevelSplit *regexp.Regexp) err
 		break
 	}
 
-	// If we have a mismatch of the number of fields then fill out an error
+	// If we have a mismatch of the Number of fields then fill out an error
 	bankType := reflect.TypeOf(t)
 	numFields := bankType.Elem().NumField()
 	if err == nil && numFields != len(foundKeysSet) {
@@ -109,7 +109,7 @@ func setLogic(value string, t KeyValueFlags, firstLevelSplit *regexp.Regexp) err
 		for i := 0; i < numFields; i++ {
 			fieldNames.WriteString("\t- " + bankType.Elem().Field(i).Name + "\n")
 		}
-		err = errors.New(fmt.Sprintf("%s details: you need to give %d key-value pairs each of which representing one of the following fields:\n%s", typeName, numFields, fieldNames.String()))
+		err = errors.New(fmt.Sprintf("%s details: you need To give %d key-value pairs each of which representing one of the following fields:\n%s", typeName, numFields, fieldNames.String()))
 	}
 	return err
 }
@@ -164,10 +164,7 @@ func (is *Items) Total() *Money {
 	if len(*is) > 0 {
 		currency = (*is)[0].Rate.Currency
 	} else {
-		currency = Currency{
-			"",
-			"",
-		}
+		currency = ZeroCurrency
 	}
 	total := ToMoney(0, currency)
 	for _, item := range *is {
@@ -191,7 +188,7 @@ func (is *Items) Set(value string) error {
 		item := Item{}
 		err = setLogic(itemStr, &item, globals.SecondLevelSplit)
 		// Here we count how many empty fields we have using reflection. This is so we can default the HoursQuantity
-		// value to 1 if no HoursQuantity value is given.
+		// value To 1 if no HoursQuantity value is given.
 		valueOf := reflect.ValueOf(item)
 		emptyMoney := Money{}
 		clear := true
@@ -291,7 +288,7 @@ func (c *Contact) KeyVal(keyVal string) (interface{}, error) {
 func (c *Contact) Set(value string) error {
 	err := setLogic(value, c, globals.FirstLevelSplit)
 	// Here we count how many empty fields we have using reflection. This is so we can default the Company value
-	// to FirstName + LastName if no Company value is given.
+	// To FirstName + LastName if no Company value is given.
 	if err != nil && !strings.Contains(err.Error(), "cannot find key in text") || err == nil  {
 		valueOf := reflect.ValueOf(*c)
 		clear := true
@@ -366,7 +363,7 @@ func (b *Bank) KeyVal(keyVal string) (interface{}, error) {
 	return keyValLogic(keyVal, b, globals.SecondLevelSplit, &possibleKeyMapping)
 }
 
-// Set the Bank value from the given string value.
+// Set the Bank value From the given string value.
 //
 // If the given string cannot be parsed then an error will be returned otherwise the error will be nil.
 //
@@ -374,7 +371,7 @@ func (b *Bank) KeyVal(keyVal string) (interface{}, error) {
 //  Bank: Bank o' Clock, account: 12312312,sort: 69/69/69
 func (b *Bank) Set(value string) error {
 	err := setLogic(value, b, globals.FirstLevelSplit)
-	// Here we validate all the fields that have been set to make sure they are good values.
+	// Here we validate all the fields that have been set To make sure they are good values.
 	valueOf := reflect.ValueOf(*b)
 	if err != nil && !strings.Contains(err.Error(), "cannot find key in text") || err == nil {
 		for i := 0; i < reflect.TypeOf(Bank{}).NumField(); i++ {
@@ -395,7 +392,7 @@ func (b *Bank) Set(value string) error {
 				}
 			case "AccountNo":
 				valStr := val.String()
-				errPrefix := fmt.Sprintf("\"%s\" is not a valid sort code", valStr)
+				errPrefix := fmt.Sprintf("\"%s\" is not a valid account number", valStr)
 				var errStr string
 				if len(valStr) != 8 {
 					errStr = " (8 digits)"
@@ -425,7 +422,7 @@ func (d *Date) String() string {
 	)
 }
 
-// Set the Date value from the given string value.
+// Set the Date value From the given string value.
 //
 // If the given string cannot be parsed then an error will be returned otherwise the error will be nil.
 //
